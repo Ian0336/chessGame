@@ -24,7 +24,7 @@ export default function Home() {
   const [turn, setTurn] = useState(0);
   const [player1, setPlayer1] = useState<Player>({id: 0, name: "player1", chessList: []});
   const [player2, setPlayer2] = useState<Player>({id: 1, name: "player2", chessList: []});
-  const [animatedChess, setAnimatedChess] = useState({player: 0, pos: [0, 0], down: false});
+  const [animatedChess, setAnimatedChess] = useState({player: 0, pos: [1, 1], down: false});
 
   useEffect(() => {
     setIsClient(true);
@@ -43,6 +43,9 @@ export default function Home() {
       setAnimatedChess({...animatedChess, down: true});
       return;
     }
+    if(animatedChess.down) {
+      return
+    }
     setAnimatedChess({player: turn, pos: [e.row, e.col], down: false});
   }
   const handleAddChess = (player: number, pos: [number, number]) => {
@@ -52,6 +55,7 @@ export default function Home() {
       setPlayer2({...player2, chessList: [...player2.chessList, pos]});
     }
     setTurn((turn + 1) % 2);
+    setAnimatedChess({player: (turn + 1) % 2, pos: [1, 1], down: false});
   }
 
   
@@ -60,7 +64,7 @@ export default function Home() {
     <div style={{height:"100vh"}}>
       <Canvas camera={{ position: [10, 10, 10], fov: 33 }} >
         <ambientLight intensity={1.5}  />
-        <directionalLight position={[3, 3, 3]} color={new THREE.Color(COLOR_OF_PLAYER[turn])} intensity={3}/>
+        <directionalLight position={[0, 3, 0]} color={new THREE.Color(COLOR_OF_PLAYER[turn])} intensity={3}/>
         <Chessboard handClickChessBoard={handClickChessBoard} />
         <Chesses player={player1.id} chessList={player1.chessList} />
         <Chesses player={player2.id} chessList={player2.chessList} />
