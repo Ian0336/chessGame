@@ -74,7 +74,9 @@ function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => voi
       // reverse 使最新的房間在最上面
       setRooms(data.reverse());
     });
-
+    socket.emit('requestRooms', (rooms: any) => {
+      setRooms(rooms.reverse());
+    });
     return () => {
       socket.off('roomsList');
     };

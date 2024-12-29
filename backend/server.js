@@ -14,8 +14,6 @@ const rooms = {};
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
   console.log('Total users:', Object.keys(rooms));
-  // 玩家取得所有房間
-  socket.emit('roomsList', Object.keys(rooms));
 
   // 玩家創建房間
   socket.on('createRoom', (callback) => {
@@ -34,6 +32,10 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     io.emit('roomsList', Object.keys(rooms)); // 通知所有玩家有新房間
     callback({ success: true, message: 'Room created', roomId});
+  });
+
+  socket.on('requestRooms', (callback) => {
+    callback(Object.keys(rooms)); // 使用回調返回房間列表
   });
 
   // 玩家加入房間
