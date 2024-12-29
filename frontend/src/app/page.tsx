@@ -8,6 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { pre, tr } from 'framer-motion/client';
 import { is } from '@react-three/fiber/dist/declarations/src/core/utils';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:30601');
+// const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
@@ -65,24 +69,34 @@ function SmoothCamera({ isLoading }: { isLoading: boolean }) {
 function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => void }) {
   const [rooms, setRooms] = useState<string[]>([]);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
-
   useEffect(() => {
-    // 模擬已有房間
-    const initialRooms = ['Room 1', 'Room 2', 'Room 3'];
-    setRooms(initialRooms);
+    socket.on('roomsList', (data: any) => {
+      // reverse 使最新的房間在最上面
+      setRooms(data.reverse());
+    });
+
+    return () => {
+      socket.off('roomsList');
+    };
   }, []);
 
   const handleCreateRoom = () => {
     setIsCreatingRoom(true);
-    setTimeout(() => {
-      setRooms((prev) => [...prev, `Room ${prev.length + 1}`]);
+
+    socket.emit('createRoom', (response:any) => {
+      if (response.success) {
+        // router.push(`/game?roomId=${roomId}`); // 導向遊戲頁面，並攜帶房間 ID
+      } else {
+        // setMessage(response.message);
+      }
+      console.log('response', response);
       setIsCreatingRoom(false);
-    }, 1000); // 模擬創建房間需要的時間
+    });
   };
   return (
     <motion.div
         initial={{ opacity: 0, transform: 'translate(-50%, -50%)', top: '100%'}}
-        animate={{ opacity: 1, transform: 'translate(-50%, -50%)', top: '50%' }}
+        animate={{ opacity: 0.95, transform: 'translate(-50%, -50%)', top: '50%' }}
         exit={{ opacity: 0, transform: 'translate(-50%, -50%)', top: '100%' }}
         style={{
           position: 'absolute',
@@ -109,7 +123,7 @@ function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => voi
                 exit={{ opacity: 0, x: 20 }}
                 style={{
                   background: 'linear-gradient(135deg, #777777, #333333',
-                  padding: '10px 15px',
+                  padding: '10px  80px',
                   margin: '10px 0',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -118,7 +132,7 @@ function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => voi
                 whileHover={{ scale: 1.05 }}
                 onClick={() => handleEnterRoom(index)}
               >
-                {room}
+              Room-{room}
               </motion.div>
             ))}
           </AnimatePresence>
