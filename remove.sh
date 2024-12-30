@@ -11,4 +11,4 @@ docker images | grep -E "(tictactoe)" | awk '{print $3}' | xargs docker rmi -f
 docker volume rm $(docker volume ls -q) 
 
 # 重建並啟動所有服務
-docker compose up --build
+# docker compose up --build

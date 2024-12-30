@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -9,23 +9,44 @@ import { useRouter } from 'next/navigation';
 import { pre, tr } from 'framer-motion/client';
 import { is } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { io } from 'socket.io-client';
+import {SocketContext} from './_components/socket';
 
-const socket = io('http://localhost:30601');
+// const socket = io('http://localhost:30601');
 // const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
 export default function Home() {
+  const socket = useContext(SocketContext);
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  
   useEffect(() => setIsClient(true), []);
 
-  const handleEnterRoom = async(idx: number) => {
-    console.log(`Enter room ${idx}`);
+  useEffect(() => {
+    socket.on('gameStart', (data: any) => {
+      console.log('gameStart', data);
+      router.push(`/game?roomId=${data.roomId}`);
+    });
+    return () => {
+      socket.off('gameStart');
+    };
+  }
+  , []);
+
+  const handleEnterRoom = async(id: string) => {
+    console.log(`Enter room ${id}`);
     setIsLoading(prev => true);
-    const timer = setTimeout(() => {
-      router.push(`/game`);
-    }
-    , 5000);
+    // const timer = setTimeout(() => {
+    //   router.push(`/game`);
+    // }
+    // , 5000);
+    socket.emit('joinRoom', id, (response: any) => {
+      if (response.success) {
+        console.log('response', response);
+      } else {
+        console.log('response', response);
+      }
+    });
   };
 
   if (!isClient) return null;
@@ -66,8 +87,9 @@ function SmoothCamera({ isLoading }: { isLoading: boolean }) {
 
   return null;
 }
-function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => void }) {
+function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: string) => void }) {
   const [rooms, setRooms] = useState<string[]>([]);
+  const socket = useContext(SocketContext);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   useEffect(() => {
     socket.on('roomsList', (data: any) => {
@@ -91,6 +113,7 @@ function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => voi
       } else {
         // setMessage(response.message);
       }
+      handleEnterRoom(response.roomId);
       console.log('response', response);
       setIsCreatingRoom(false);
     });
@@ -132,7 +155,7 @@ function MatchRooms({ handleEnterRoom }: { handleEnterRoom: (idx: number) => voi
                   transition: 'transform 0.2s',
                 }}
                 whileHover={{ scale: 1.05 }}
-                onClick={() => handleEnterRoom(index)}
+                onClick={() => handleEnterRoom(room)}
               >
               Room-{room}
               </motion.div>

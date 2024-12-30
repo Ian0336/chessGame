@@ -1,6 +1,8 @@
+'use client'
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { SocketContext, socket } from "./_components/socket";
 
 // const geistSans = localFont({
 //   src: "./_fonts/GeistVF.woff",
@@ -13,10 +15,10 @@ import "./globals.css";
 //   weight: "100 900",
 // });
 
-export const metadata: Metadata = {
-  title: "Tic Tac Toe",
-  description: "A simple tic tac toe game",
-};
+// export const metadata: Metadata = {
+//   title: "Tic Tac Toe",
+//   description: "A simple tic tac toe game",
+// };
 
 export default function RootLayout({
   children,
@@ -28,7 +30,9 @@ export default function RootLayout({
     <html lang="en">
       <body
       >
-        {children}
+        <SocketContext.Provider value={socket}>
+          {children}
+        </SocketContext.Provider>
       </body>
     </html>
   );
