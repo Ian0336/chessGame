@@ -127,6 +127,7 @@ io.on('connection', (socket) => {
         // delete battleRoom[args.roomId];
         setTimeout(() => {
           io.to(args.roomId).emit('gameOver', {winner: gameResult});
+          delete battleRoom[args.roomId];
         }
         , 1000);
         return;

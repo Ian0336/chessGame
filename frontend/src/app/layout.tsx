@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SocketContext, socket } from "./_components/socket";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 // const geistSans = localFont({
 //   src: "./_fonts/GeistVF.woff",
@@ -31,9 +33,15 @@ export default function RootLayout({
       <body
       >
         <SocketContext.Provider value={socket}>
-          {children}
+          <Suspense fallback={<Loading />}>
+            {children}
+         </Suspense>
         </SocketContext.Provider>
       </body>
     </html>
   );
 }
+
+
+
+
