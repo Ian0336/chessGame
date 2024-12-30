@@ -46,8 +46,8 @@ export default function Home() {
     socket.on('gameOver', (data: any) => {
       setGameOver(data.winner === socket.id? 'win' : 'lose'); 
       // window.alert(`Game Over! You are ${data.winner === socket.id ? 'winner' : 'loser'}`);
-      console.log('gameOver', data);
-      router.push('/');
+      // console.log('gameOver', data);
+      // router.push('/');
     }
     );
     return () => {
@@ -95,6 +95,14 @@ export default function Home() {
     }
     );
   }, [roomId]);
+
+  useEffect(() => {
+    if (gameOver) {
+      window.alert(`Game Over! You are ${gameOver}`);
+      router.push('/');
+    }
+  }
+  , [gameOver]);
 
 
 

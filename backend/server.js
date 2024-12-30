@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
       return callback({ success: false, message: 'Room does not exist' });
     }
     callback({ success: true, message: 'Room exist', room });
-    console.log('/////////initGame:', socket.id, roomId, room);
+    // console.log('/////////initGame:', socket.id, roomId, room);
   }
   );
 
