@@ -114,6 +114,9 @@ io.on('connection', (socket) => {
       const {player, pos} = args;
       let nextPlayer = (battleRoom[args.roomId].turn + 1) % 2;
       battleRoom[args.roomId].allChess.push([player, pos[0], pos[1]]);
+      if(battleRoom[args.roomId].allChess.length === 7){
+        battleRoom[args.roomId].allChess.shift();
+      }
       battleRoom[args.roomId].turn = nextPlayer
       battleRoom[args.roomId].animatedChess = {player: nextPlayer, pos: [1, 1], down: false};
       // io.to(args.roomId).emit('addChess', {player, pos});
