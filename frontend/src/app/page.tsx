@@ -6,9 +6,9 @@ import * as THREE from 'three';
 import Chessboard from './_components/Chessboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { pre, tr } from 'framer-motion/client';
-import { is } from '@react-three/fiber/dist/declarations/src/core/utils';
-import { io } from 'socket.io-client';
+// import { pre, tr } from 'framer-motion/client';
+// import { is } from '@react-three/fiber/dist/declarations/src/core/utils';
+// import { io } from 'socket.io-client';
 import {SocketContext} from './_components/socket';
 
 // const socket = io('http://localhost:30601');

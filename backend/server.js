@@ -123,10 +123,14 @@ io.on('connection', (socket) => {
       if (gameResult){
         console.log('gameOver:', gameResult);
         battleRoom[args.roomId].animatedChess = {...battleRoom[args.roomId].animatedChess, pos: [-1, -1]};
+        battleRoom[args.roomId].turn = -1;
+        if (gameResult.winPos){
+          battleRoom[args.roomId].allChess = gameResult.winPos;
+        }
         io.to(args.roomId).emit('updateGame', {room: battleRoom[args.roomId]});
         // delete battleRoom[args.roomId];
         setTimeout(() => {
-          io.to(args.roomId).emit('gameOver', {winner: gameResult});
+          io.to(args.roomId).emit('gameOver', {winner: gameResult.winner});
           delete battleRoom[args.roomId];
         }
         , 1000);

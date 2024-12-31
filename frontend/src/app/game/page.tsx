@@ -8,29 +8,33 @@ import * as THREE from 'three';
 import { useSpring, animated } from '@react-spring/three'
 import {RAW_LENGTH, BLOCK_LENGTH, OFFSET_X, OFFSET_Y, COLOR_OF_PLAYER, Player} from '../_utils/helper';
 import Chessboard from '../_components/Chessboard';
-import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SocketContext } from '../_components/socket';
 import { pre } from 'framer-motion/client';
+import Loading from './loading';
 
 
-// const socket = io('http://localhost:30601');
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const socket = React.useContext(SocketContext);
+
   const [isClient, setIsClient] = useState(false);
+  const [isInit, setIsInit] = useState(false);
+  const [gameOver, setGameOver] = useState('');
+  
   const [roomId, setRoomId] = useState('');
   const [roomPlayers, setRoomPlayers] = useState([]);
   const [turn, setTurn] = useState(0);
   const [player1, setPlayer1] = useState<Player>({id: 0, name: "player1", chessList: []});
   const [player2, setPlayer2] = useState<Player>({id: 1, name: "player2", chessList: []});
   const [animatedChess, setAnimatedChess] = useState({player: 0, pos: [1, 1], down: false});
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const socket = React.useContext(SocketContext);
-  const [gameOver, setGameOver] = useState('');
+
 
   useEffect(() => {
-    // setIsClient(true);
+    setIsClient(true);
     socket.on('updateGame', (data: any) => {
       console.log('updateGame', data);
       let roomInfo = data.room;
@@ -44,10 +48,9 @@ export default function Home() {
     }
     );
     socket.on('gameOver', (data: any) => {
-      setGameOver(data.winner === socket.id? 'win' : 'lose'); 
-      // window.alert(`Game Over! You are ${data.winner === socket.id ? 'winner' : 'loser'}`);
-      // console.log('gameOver', data);
-      // router.push('/');
+      console.log('gameOver', data);
+      setGameOver(data.winner === socket.id? 'win' : data.winner === 'draw'? 'draw' : 'lose');
+      
     }
     );
     return () => {
@@ -69,6 +72,11 @@ export default function Home() {
   }, [searchParams, router]);
 
   useEffect(() => {
+    if (!isClient) {
+      return;
+    }
+    console.log('roomId', roomId);
+
     // init game by socket
     socket.emit('initGame', roomId, (response: any) => {
       console.log('initGame', response);
@@ -88,27 +96,21 @@ export default function Home() {
         setPlayer2({...player2, chessList: player2Chess});
         setRoomPlayers(roomInfo.players);
 
-        setIsClient(true);
+        setIsInit(true);
+      }else{
+        window.alert('initGame failed');
+        router.push('/');
       }
-
-      
     }
     );
   }, [roomId]);
 
-  useEffect(() => {
-    if (gameOver) {
-      window.alert(`Game Over! You are ${gameOver}`);
-      router.push('/');
-    }
-  }
-  , [gameOver]);
-
-
-
-
   if (!isClient) {
     return null;
+  }
+
+  if (!isInit) {
+    return <Loading />
   }
 
   const handClickChessBoard = (e: any) => {
@@ -153,7 +155,7 @@ export default function Home() {
     <div style={{height:"100vh"}}>
       <Canvas camera={{ position: [10, 10, 10], fov: 33 }} >
         <ambientLight intensity={1.5}  />
-        <directionalLight position={[0, 3, 0]} color={new THREE.Color('0xaaaaaa')} intensity={3}/>
+        <directionalLight position={[0, 3, 0]} color={new THREE.Color('white')} intensity={3}/>
         <Chessboard handClickChessBoard={handClickChessBoard} />
         <Chesses player={player1.id} chessList={player1.chessList} />
         <Chesses player={player2.id} chessList={player2.chessList} />
@@ -161,10 +163,65 @@ export default function Home() {
         {/* <OrbitControls rotateSpeed={0.3}  enableZoom={true} /> */}
         <OrbitControls rotateSpeed={0.3} minPolarAngle={Math.PI / 8} maxPolarAngle={Math.PI / 3.5} enableZoom={false}  enablePan={false}/>
       </Canvas>
+      {gameOver !== '' && 
+        <AnimatePresence>
+          <Result res={gameOver}/>
+        </AnimatePresence>
+      }
     </div>
-
   );
 }
+
+function Result({res}: {res: string}) {
+  const router = useRouter();
+  const handleBackToHome = () => {
+    router.push('/');
+  }
+  return (
+    <motion.div
+            initial={{ opacity: 0, transform: 'translate(-50%, -50%)', top: '100%'}}
+            animate={{ opacity: 0.95, transform: 'translate(-50%, -50%)', top: '50%' }}
+            exit={{ opacity: 0, transform: 'translate(-50%, -50%)', top: '100%' }}
+            style={{
+              position: 'absolute',
+              top: '40%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'linear-gradient(135deg, #333333, #aaaaaa',
+              color: 'white',
+              padding: '30px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+              width: '350px',
+              textAlign: 'center',
+              fontSize: '30px',
+            }}
+          >
+            <div>
+              {res === 'win' ? 'You Win!' : res === 'lose' ? 'You Lose!' : 'Draw!'}
+            </div>
+            <motion.button
+              onClick={handleBackToHome}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                color: '#fff',
+                background: '#333',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              Back
+            </motion.button>
+          </motion.div>
+  )
+}
+
 
 function AnimatedChess({player, pos, down, handleAddChess}: {player: number, pos: [number, number], down?: boolean, handleAddChess: any}) {
   const [visible, setVisible] = useState(true);

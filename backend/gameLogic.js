@@ -27,8 +27,16 @@ function checkWinner(roomInfo) {
     for (let line of lines) {
       const [a, b, c] = line;
       if (board[a] != null && board[a] === board[b] && board[a] === board[c]) {
-        return roomInfo.players[board[a]];; // 贏家 playerId
+        let winPos = [];
+        winPos.push([board[a], a % 3, Math.floor(a / 3)]); 
+        winPos.push([board[a], b % 3, Math.floor(b / 3)]);
+        winPos.push([board[a], c % 3, Math.floor(c / 3)]);
+        return {winner:roomInfo.players[board[a]], winPos}; 
       }
+    }
+    // check if all cells are filled
+    if (allChess.length === 9) {
+      return {winner: 'draw'};
     }
   
     return null; // 無贏家
