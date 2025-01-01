@@ -44,7 +44,6 @@ export default function Home() {
     );
     return () => {
       socket.off('updateGame');
-      console.log('off updateGame', isInit);
       socket.off('gameOver');
     };
   }, []);
@@ -160,7 +159,7 @@ export default function Home() {
     } 
     );
   }
-  const handleAddChess = (player: number, pos: [number, number]) => {
+  const handleAddChess = async(player: number, pos: [number, number]) => {
     if (turn === -1) {
       return;
     }
@@ -168,9 +167,9 @@ export default function Home() {
       return
     }
     if (turn === 0){
-      setPlayer1({...player1, chessList: [...player1.chessList, pos]});
+      setPlayer1(prev => ({ ...prev, chessList: [...prev.chessList, pos] }));
     }else{
-      setPlayer2({...player2, chessList: [...player2.chessList, pos]});
+      setPlayer2(prev => ({ ...prev, chessList: [...prev.chessList, pos] }));
     }
     // setAnimatedChess({player: -1, pos: [-1, -1], down: false});
 

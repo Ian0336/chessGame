@@ -30,7 +30,14 @@ export default function RootLayout({
   
   return (
     <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" />
+        <title>Tic Tac Toe</title>
+      </head>
       <body
+      
       >
         <SocketContext.Provider value={socket}>
           <Suspense fallback={<Loading />}>
