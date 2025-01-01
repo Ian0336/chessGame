@@ -35,7 +35,7 @@ export default function Home() {
 
   const handleEnterRoom = async(id: string) => {
     console.log(`Enter room ${id}`);
-    setIsLoading(prev => true);
+    // setIsLoading(prev => true);
     // const timer = setTimeout(() => {
     //   router.push(`/game`);
     // }
@@ -43,6 +43,7 @@ export default function Home() {
     socket.emit('joinRoom', id, (response: any) => {
       if (response.success) {
         console.log('response', response);
+        setIsLoading(prev => true);
       } else {
         console.log('response', response);
       }

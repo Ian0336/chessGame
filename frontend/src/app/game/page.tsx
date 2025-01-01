@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { SocketContext } from '../_components/socket';
 import { pre } from 'framer-motion/client';
 import Loading from './loading';
+import { is } from '@react-three/fiber/dist/declarations/src/core/utils';
 
 
 
@@ -55,9 +56,20 @@ export default function Home() {
     );
     return () => {
       socket.off('updateGame');
-      console.log('off updateGame');
+      console.log('off updateGame', isInit);
+      socket.off('gameOver');
     };
   }, []);
+  useEffect(() => {
+    return () => {
+      if(isInit) {
+        socket.emit('leaveRoom', roomId, (response: any) => {
+          console.log('leaveRoom', response);
+        }
+        );
+      }
+    }
+  }, [isInit, roomId]);
   useEffect(() => {
     const roomId = searchParams.get('roomId');
     if (roomId) {
@@ -105,13 +117,6 @@ export default function Home() {
     );
   }, [roomId]);
 
-  if (!isClient) {
-    return null;
-  }
-
-  if (!isInit) {
-    return <Loading />
-  }
 
   const handClickChessBoard = (e: any) => {
     if(roomPlayers[turn] !== socket.id) {
@@ -149,7 +154,14 @@ export default function Home() {
   }
   console.log(player1.chessList, '<<< player1.chessList');
   console.log(player2.chessList, '<<< player2.chessList');
-  
+
+  if (!isClient) {
+    return null;
+  }
+
+  if (!isInit) {
+    return <Loading />
+  }
   
   return (
     <div style={{height:"100vh"}}>
