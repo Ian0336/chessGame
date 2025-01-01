@@ -175,9 +175,17 @@ export default function Home() {
 
     setTurn(prev => 1 - prev);
     socket.emit('playerMove', {roomId, moveType: 'addChess', player, pos}, (response: any) => {
-      console.log('playerMove', response);
-    }
-    );
+      if (response.success && response.room){
+        let roomInfo = response.room;
+        let allChess = roomInfo.allChess;
+        let player1Chess = allChess.filter((chess: any) => chess.player === 0).map((chess: any) => [chess.row, chess.col]);
+        let player2Chess = allChess.filter((chess: any) => chess.player === 1).map((chess: any) => [chess.row, chess.col]);
+        setPlayer1({...player1, chessList: player1Chess});
+        setPlayer2({...player2, chessList: player2Chess});
+        setTurn(prev => roomInfo.turn);
+        setAnimatedChess(prev => roomInfo.animatedChess);
+      }
+    });
   }
   console.log(player1.chessList, '<<< player1.chessList');
   console.log(player2.chessList, '<<< player2.chessList');

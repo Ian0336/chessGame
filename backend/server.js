@@ -137,7 +137,7 @@ io.on('connection', (socket) => {
 
       room.turn = nextPlayer;
       room.animatedChess = { player: nextPlayer, pos: [1, 1], down: false };
-      callback({ success: true, message: 'addChess' });
+      
 
       const gameResult = checkWinner(room);
       if (gameResult) {
@@ -151,8 +151,10 @@ io.on('connection', (socket) => {
           io.to(roomId).emit('gameOver', { winner: gameResult.winner });
           battleRoom.delete(roomId);
         }, 1000);
+        callback({ success: true, message: 'addChess' });
         return;
       }
+      callback({ success: true, room: room });
     }
 
     io.to(roomId).emit('updateGame', { room });
