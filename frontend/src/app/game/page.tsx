@@ -50,14 +50,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!isInit) {
+    if (!isInit || socket.id === undefined) {
       return;
     }
-    let myPlayer = roomPlayers.indexOf(socket.id);
-    if (myPlayer === -1) {
-      return;
-    }
-    if (turn == myPlayer) {
+
+    if (roomPlayers[turn] === socket.id) {
       return;
     }
     socket.on('updateGame', (data: any) => {
