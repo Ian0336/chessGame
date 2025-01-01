@@ -36,6 +36,30 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
+    
+    socket.on('gameOver', (data: any) => {
+      console.log('gameOver', data);
+      setGameOver(data.winner === socket.id? 'win' : data.winner === 'draw'? 'draw' : 'lose');
+    }
+    );
+    return () => {
+      socket.off('updateGame');
+      console.log('off updateGame', isInit);
+      socket.off('gameOver');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isInit) {
+      return;
+    }
+    let myPlayer = roomPlayers.indexOf(socket.id);
+    if (myPlayer === -1) {
+      return;
+    }
+    if (turn == myPlayer) {
+      return;
+    }
     socket.on('updateGame', (data: any) => {
       console.log('updateGame', data);
       let roomInfo = data.room;
@@ -48,18 +72,11 @@ export default function Home() {
       setAnimatedChess(prev => roomInfo.animatedChess);
     }
     );
-    socket.on('gameOver', (data: any) => {
-      console.log('gameOver', data);
-      setGameOver(data.winner === socket.id? 'win' : data.winner === 'draw'? 'draw' : 'lose');
-      
-    }
-    );
     return () => {
       socket.off('updateGame');
-      console.log('off updateGame', isInit);
-      socket.off('gameOver');
+      console.log('off updateGame');
     };
-  }, []);
+  }, [turn, roomPlayers, isInit]);
   useEffect(() => {
     return () => {
       if(isInit) {
@@ -119,6 +136,9 @@ export default function Home() {
 
 
   const handClickChessBoard = (e: any) => {
+    if (turn === -1) {
+      return;
+    }
     if(roomPlayers[turn] !== socket.id) {
       return
     }
@@ -127,7 +147,7 @@ export default function Home() {
       return;
     }
     if (e.row == animatedChess.pos[0] && e.col == animatedChess.pos[1]) {
-      // setAnimatedChess({...animatedChess, down: true});{}
+      setAnimatedChess({...animatedChess, down: true});
       socket.emit('playerMove', {roomId, moveType: 'animatedChess', ...animatedChess, down: true}, (response: any) => {
         console.log('playerMove', response);
       }
@@ -137,16 +157,27 @@ export default function Home() {
     if(animatedChess.down) {
       return
     }
-    // setAnimatedChess({player: turn, pos: [e.row, e.col], down: false});
+    setAnimatedChess({player: turn, pos: [e.row, e.col], down: false});
     socket.emit('playerMove', {roomId, moveType: 'animatedChess', player: turn, pos: [e.row, e.col], down: false}, (response: any) => {
       console.log('playerMove', response);
     } 
     );
   }
   const handleAddChess = (player: number, pos: [number, number]) => {
+    if (turn === -1) {
+      return;
+    }
     if(roomPlayers[turn] !== socket.id) {
       return
     }
+    if (turn === 0){
+      setPlayer1({...player1, chessList: [...player1.chessList, pos]});
+    }else{
+      setPlayer2({...player2, chessList: [...player2.chessList, pos]});
+    }
+    // setAnimatedChess({player: -1, pos: [-1, -1], down: false});
+
+    setTurn(prev => 1 - prev);
     socket.emit('playerMove', {roomId, moveType: 'addChess', player, pos}, (response: any) => {
       console.log('playerMove', response);
     }
